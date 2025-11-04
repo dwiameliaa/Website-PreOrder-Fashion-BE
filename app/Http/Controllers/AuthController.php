@@ -17,6 +17,8 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users',
             'password' => 'required|min:8',
+            'address' => 'required|string|max:255',
+            'phone' => 'required|string|regex:/^[0-9+]+$/|max:15',
         ]);
 
         // 2. cek validator
@@ -29,6 +31,8 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
+            'address' => $request->address,
+            'phone' => $request->phone,
         ]);
 
         // 4. cek keberhasilan
