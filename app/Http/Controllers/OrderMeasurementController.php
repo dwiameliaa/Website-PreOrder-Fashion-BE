@@ -134,7 +134,7 @@ class OrderMeasurementController extends Controller
 
     public function update(Request $request, string $id)
     {
-        // 1️. Cari data berdasarkan ID
+        // 1. Cari data berdasarkan ID
         $order = OrderMeasurement::find($id);
 
         if (!$order) {
@@ -144,7 +144,7 @@ class OrderMeasurementController extends Controller
             ], 404);
         }
 
-        // 2️. Validasi input (tidak semua required, karena ini update)
+        // 2. Validasi input (tidak semua required, karena ini update)
         $validator = Validator::make($request->all(), [
             'product_type' => 'nullable|in:shirt,pants',
             'measurement_type' => 'nullable|in:standard,custom',
@@ -173,10 +173,10 @@ class OrderMeasurementController extends Controller
             ], 422);
         }
 
-        // 3️. Ambil data yang divalidasi (hanya field yang dikirim user)
+        // 3. Ambil data yang divalidasi (hanya field yang dikirim user)
         $data = array_filter($validator->validated(), fn($v) => !is_null($v));
 
-        // 4️. Handle upload image baru (jika ada)
+        // 4. Handle upload image baru (jika ada)
         if ($request->hasFile('image')) {
             $image = $request->file('image');
             $image->store('order_measurements', 'public');
@@ -189,7 +189,7 @@ class OrderMeasurementController extends Controller
             $data['image'] = $image->hashName();
         }
 
-        // 5️. Logika pengisian field ukuran
+        // 5. Logika pengisian field ukuran
         if (isset($data['measurement_type']) && $data['measurement_type'] === 'standard') {
             // kalau standard → hapus semua field custom
             $data['size'] = $data['size'] ?? $order->size; // tetap pakai size lama jika tidak dikirim
@@ -210,10 +210,10 @@ class OrderMeasurementController extends Controller
             $data['size'] = null;
         }
 
-        // 6️⃣ Update data di database
+        // 6. Update data di database
         $order->update($data);
 
-        // 7️⃣ Response
+        // 7. Response
         return response()->json([
             'success' => true,
             'message' => 'Order updated successfully!',
@@ -234,7 +234,10 @@ class OrderMeasurementController extends Controller
             ], 404);
         }
 
-        // Jika berhasil dihapus
+        if($order->image) {
+            Storage::disk('public')->delete('order_measurements/' . $order->image);
+        }
+
         $order->delete();
 
         return response()->json([
